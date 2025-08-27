@@ -1,0 +1,4 @@
+db.url=jdbc:postgresql://localhost:5432/games_db
+db.user=postgres
+db.password=YOUR_PASSWORD_HERE
+db.driver=org.postgresql.Driver

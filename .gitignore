@@ -141,3 +141,22 @@ hs_err_pid*
 replay_pid*
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij,java
+# Maven
+target/
+*/target/
+
+# Database credentials
+core/src/main/resources/database.properties
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

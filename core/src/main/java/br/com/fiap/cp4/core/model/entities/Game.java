@@ -1,8 +1,8 @@
-package model.entities;
+package br.com.fiap.cp4.core.model.entities;
 
-import model.enums.GameGenre;
-import model.enums.GameStatus;
-import model.enums.GamePlatform;
+import br.com.fiap.cp4.core.model.enums.GameGenre;
+import br.com.fiap.cp4.core.model.enums.GameStatus;
+import br.com.fiap.cp4.core.model.enums.GamePlatform;
 
 import java.util.Objects;
 

@@ -1,4 +1,4 @@
-package model.enums;
+package br.com.fiap.cp4.core.model.enums;
 
 public enum GameStatus {
     PLAYING("Jogando", "#4CAF50"),
