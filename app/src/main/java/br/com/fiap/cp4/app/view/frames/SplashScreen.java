@@ -75,7 +75,8 @@ public class SplashScreen extends JFrame {
                     if (success) {
                         Timer timer = new Timer(1000, e -> {
                             openMainSystem();
-                            dispose();
+                            // Fecha a splash screen após abrir a main screen
+                            SwingUtilities.invokeLater(() -> dispose());
                         });
                         timer.setRepeats(false);
                         timer.start();
@@ -116,6 +117,11 @@ public class SplashScreen extends JFrame {
     }
 
     private void openMainSystem() {
-        System.out.println("Opening main frame");
+        try {
+            MainScreen mainScreen = new MainScreen();
+            mainScreen.showWindow();
+        } catch (Exception e) {
+            System.err.println("Error creating main screen: " + e.getMessage());
+        }
     }
 }
