@@ -1,0 +1,128 @@
+# Configurações para normalização de linha
+* text=auto eol=lf
+
+# Arquivos de código Java
+*.java text eol=lf
+*.kt text eol=lf
+*.kts text eol=lf
+
+# Arquivos de configuração
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.properties text eol=lf
+*.gradle text eol=lf
+*.gradle.kts text eol=lf
+*.toml text eol=lf
+
+# Arquivos de documentação
+*.md text eol=lf
+*.txt text eol=lf
+*.rst text eol=lf
+*.adoc text eol=lf
+
+# Arquivos de script
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Arquivos web (se houver frontend)
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.vue text eol=lf
+
+# Arquivos de dados
+*.sql text eol=lf
+*.csv text eol=lf
+
+# Arquivos binários - não processar
+*.jar binary
+*.war binary
+*.ear binary
+*.zip binary
+*.tar.gz binary
+*.tgz binary
+*.gz binary
+*.rar binary
+*.7z binary
+
+# Imagens
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.webp binary
+*.bmp binary
+*.tiff binary
+
+# Fontes
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Outros binários
+*.pdf binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary
+
+# Arquivos específicos do sistema
+.DS_Store binary
+Thumbs.db binary
+
+# Arquivos de certificados e chaves
+*.p12 binary
+*.jks binary
+*.keystore binary
+*.truststore binary
+*.pem binary
+*.crt binary
+*.cer binary
+*.key binary
+
+# Linguística do GitHub - configurar detecção de linguagem
+*.gradle linguist-language=Gradle
+*.gradle.kts linguist-language=Kotlin
+build.gradle linguist-generated=true
+build.gradle.kts linguist-generated=true
+gradlew linguist-generated=true
+gradlew.bat linguist-generated=true
+gradle/wrapper/* linguist-generated=true
+
+# Maven wrapper
+mvnw linguist-generated=true
+mvnw.cmd linguist-generated=true
+.mvn/wrapper/* linguist-generated=true
+
+# Arquivos gerados - excluir das estatísticas do GitHub
+target/* linguist-generated=true
+build/* linguist-generated=true
+out/* linguist-generated=true
+*.class linguist-generated=true
+*.log linguist-generated=true
+
+# Arquivos de IDE - excluir das estatísticas
+.idea/* linguist-generated=true
+.vscode/* linguist-generated=true
+*.iml linguist-generated=true
+.project linguist-generated=true
+.classpath linguist-generated=true
+.settings/* linguist-generated=true
+
+# Documentação gerada
+docs/api/* linguist-documentation=true
+javadoc/* linguist-documentation=true
