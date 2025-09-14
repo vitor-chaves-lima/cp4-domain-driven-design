@@ -118,8 +118,8 @@ public class SplashScreen extends JFrame {
 
     private void openMainSystem() {
         try {
-            MainScreen mainScreen = new MainScreen();
-            mainScreen.showWindow();
+            MainFrame mainFrame = new MainFrame();
+            mainFrame.showWindow();
         } catch (Exception e) {
             System.err.println("Error creating main screen: " + e.getMessage());
         }

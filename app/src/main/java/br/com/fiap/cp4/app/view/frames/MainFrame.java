@@ -1,39 +1,46 @@
 package br.com.fiap.cp4.app.view.frames;
 
-import javax.swing.*;
+import br.com.fiap.cp4.app.view.pages.LibraryPage;
 
-public class MainScreen extends JFrame {
-    private JPanel mainPanel;
+import javax.swing.*;
+import java.awt.*;
+
+public class MainFrame extends JFrame {
+    private JPanel rootPanel;
     private JButton libraryListButton;
     private JButton favoriteListButton;
     private JButton finishedGamesListButton;
     private JButton categoriesButton;
-    private JTree list;
+    private JPanel contentPanel;
 
-    public MainScreen() {
+    public MainFrame() {
         setupMainScreen();
         setupComponents();
+        loadInitialPage();
     }
 
     private void setupMainScreen() {
+        setContentPane(rootPanel);
         setTitle("Games Management System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(true);
-        setContentPane(mainPanel);
         setSize(800, 600);
         setLocationRelativeTo(null);
     }
 
     private void setupComponents() {
+        setupContentPanel();
         setupButtonListeners();
-        setupTree();
+    }
+
+    private void setupContentPanel() {
+        LibraryPage libraryPage = new LibraryPage();
+        contentPanel.add(libraryPage.getRootPanel(), "library");
     }
 
     private void setupButtonListeners() {
         libraryListButton.addActionListener(e -> {
             System.out.println("Mostrando todos os jogos");
-            JOptionPane.showMessageDialog(this, "Carregando lista de todos os jogos...",
-                    "Todos os Jogos", JOptionPane.INFORMATION_MESSAGE);
+            showLibraryPage();
         });
 
         favoriteListButton.addActionListener(e -> {
@@ -55,23 +62,14 @@ public class MainScreen extends JFrame {
         });
     }
 
-    private void setupTree() {
-        if (list != null) {
-            list.setRootVisible(true);
-            list.setShowsRootHandles(true);
+    private void loadInitialPage() {
+        showLibraryPage();
+    }
 
-            // Expandir todos os nós por padrão
-            for (int i = 0; i < list.getRowCount(); i++) {
-                list.expandRow(i);
-            }
-
-            // Adicionar listener para cliques na árvore
-            list.addTreeSelectionListener(e -> {
-                if (list.getLastSelectedPathComponent() != null) {
-                    System.out.println("Selecionado: " + list.getLastSelectedPathComponent());
-                }
-            });
-        }
+    private void showLibraryPage() {
+        CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
+        cardLayout.show(contentPanel, "library");
+        setTitle("Games Management System - Biblioteca");
     }
 
     public void showWindow() {
