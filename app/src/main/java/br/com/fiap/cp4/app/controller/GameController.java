@@ -3,13 +3,16 @@ package br.com.fiap.cp4.app.controller;
 import br.com.fiap.cp4.core.model.dao.impl.GameDAOImpl;
 import br.com.fiap.cp4.core.model.dao.interfaces.GameDAO;
 import br.com.fiap.cp4.core.model.entities.Game;
-
+import br.com.fiap.cp4.app.view.dialogs.GameFormDialog;
+import java.time.Year;
+import java.awt.*;
 import javax.swing.*;
 import java.util.List;
 
 public class GameController {
 
     private GameDAO gameDAO;
+    private Runnable onGameListChanged;
 
     public GameController() {
         this.gameDAO = new GameDAOImpl();
@@ -19,78 +22,89 @@ public class GameController {
         try {
             return gameDAO.findAll();
         } catch (Exception e) {
-            showErrorMessage("Error loading games: " + e.getMessage());
-            return List.of(); // Return empty list on error
+            showErrorMessage("Erro ao carregar jogos: " + e.getMessage());
+            return List.of();
         }
     }
 
-    public void createNewGame() {
-        // TODO: Open game form dialog for creation
-        showInfoMessage("Create New Game - Coming Soon!");
-    }
-
-    public void editGame(Game game) {
-        if (game == null) {
-            showErrorMessage("No game selected for editing");
-            return;
-        }
-        // TODO: Open game form dialog for editing
-        showInfoMessage("Edit Game - Coming Soon!");
-    }
-
-    public void deleteGame(Game game) {
-        if (game == null) {
-            showErrorMessage("No game selected for deletion");
-            return;
-        }
-
-        int option = JOptionPane.showConfirmDialog(
-                null,
-                "Are you sure you want to delete '" + game.getTitle() + "'?",
-                "Confirm Delete",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
-
-        if (option == JOptionPane.YES_OPTION) {
+    public Game createNewGame(Component parent) {
+        Game newGame = new Game("", null, null, Year.now().getValue(), null, null);
+        Game result = GameFormDialog.showDialog(parent, this, newGame, false);
+        if (result != null) {
             try {
-                boolean deleted = gameDAO.deleteById(game.getId());
-                if (deleted) {
-                    showSuccessMessage("Game deleted successfully!");
-                    refreshGameList();
-                } else {
-                    showErrorMessage("Failed to delete game");
-                }
+                Game createdGame = gameDAO.save(result);
+                refreshGameList();
+                return createdGame;
             } catch (Exception e) {
-                showErrorMessage("Error deleting game: " + e.getMessage());
+                showErrorMessage("Erro ao criar jogo: " + e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    public void editGame(Component parent, Game game) {
+        if (game == null) {
+            showErrorMessage("Nenhum jogo selecionado para edição");
+            return;
+        }
+
+        Game gameToEdit = new Game(
+                game.getTitle(),
+                game.getGenre(),
+                game.getPlatform(),
+                game.getReleaseYear(),
+                game.getStatus(),
+                game.getImageData()
+        );
+        gameToEdit.setId(game.getId());
+
+        Game result = GameFormDialog.showDialog(parent, this, gameToEdit, true);
+        if (result != null) {
+            try {
+                gameDAO.update(result);
+                showSuccessMessage("Jogo atualizado com sucesso!");
+                refreshGameList();
+            } catch (Exception e) {
+                showErrorMessage("Erro ao atualizar jogo: " + e.getMessage());
             }
         }
     }
 
-    public void refreshGameList() {
-        // This will be called by the view to refresh data
-        showInfoMessage("Refreshing game list...");
-    }
+    public void deleteGame(Game game) {
+        if (game == null) {
+            showErrorMessage("Nenhum jogo selecionado para exclusão");
+            return;
+        }
 
-    public int getTotalGames() {
         try {
-            return gameDAO.countTotal();
+            boolean deleted = gameDAO.deleteById(game.getId());
+            if (deleted) {
+                SwingUtilities.invokeLater(() -> refreshGameList());
+            } else {
+                showErrorMessage("Falha ao excluir jogo");
+            }
         } catch (Exception e) {
-            showErrorMessage("Error counting games: " + e.getMessage());
-            return 0;
+            showErrorMessage("Erro ao excluir jogo: " + e.getMessage());
         }
     }
 
-    // Helper methods for showing messages
+    public void refreshGameList() {
+        SwingUtilities.invokeLater(() -> {
+            if (onGameListChanged != null) {
+                onGameListChanged.run();
+            }
+        });
+    }
+
+    public void setOnGameListChanged(Runnable callback) {
+        this.onGameListChanged = callback;
+    }
+
     private void showSuccessMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, message, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    private void showInfoMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "Information", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, message, "Erro", JOptionPane.ERROR_MESSAGE);
     }
 }

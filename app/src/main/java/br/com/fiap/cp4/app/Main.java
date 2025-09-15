@@ -1,6 +1,6 @@
 package br.com.fiap.cp4.app;
 
-import br.com.fiap.cp4.app.view.frames.SplashScreen;
+import br.com.fiap.cp4.app.view.frames.MainFrame;
 
 import javax.swing.*;
 
@@ -22,6 +22,8 @@ public class Main {
             ConnectionFactory.shutdown();
         }));
 
-        SwingUtilities.invokeLater(SplashScreen::new);
+        SwingUtilities.invokeLater(() -> {
+            new MainFrame().showWindow();
+        });
     }
 }

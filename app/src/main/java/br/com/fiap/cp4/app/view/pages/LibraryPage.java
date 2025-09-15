@@ -1,45 +1,73 @@
 package br.com.fiap.cp4.app.view.pages;
 
+import br.com.fiap.cp4.app.controller.GameController;
 import br.com.fiap.cp4.app.view.components.GameList;
 import br.com.fiap.cp4.core.model.entities.Game;
+import br.com.fiap.cp4.core.model.enums.GameGenre;
+import br.com.fiap.cp4.core.model.enums.GamePlatform;
+import br.com.fiap.cp4.core.model.enums.GameStatus;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class LibraryPage {
     private JPanel rootPanel;
     private GameList gameList;
+    private GameController gameController;
 
     public LibraryPage() {
-        gameList.showLoading();
-        loadGamesAsync();
+        try {
+            this.gameController = new GameController();
+            initializeUI();
+            loadGamesAsync();
+        } catch (Exception e) {
+            initializeErrorUI(e.getMessage());
+        }
     }
 
-    private void loadGamesAsync() {
-        CompletableFuture<List<Game>> gamesFuture = CompletableFuture.supplyAsync(() -> {
-            try {
-                Thread.sleep(2000);
+    private void initializeUI() {
+        rootPanel = new JPanel(new BorderLayout());
+        gameList = new GameList(gameController);
+        rootPanel.add(gameList.getRootPanel(), BorderLayout.CENTER);
+        gameList.showLoading();
+    }
 
-                return Arrays.asList(
-                        createGame(1, "The Legend of Zelda: Breath of the Wild", 2017),
-                        createGame(2, "Cyberpunk 2077", 2020),
-                        createGame(3, "God of War", 2018),
-                        createGame(4, "Red Dead Redemption 2", 2018),
-                        createGame(5, "Minecraft", 2011),
-                        createGame(6, "Grand Theft Auto V", 2013)
-                );
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return List.of();
+    private void initializeErrorUI(String error) {
+        rootPanel = new JPanel(new BorderLayout());
+
+        JLabel errorLabel = new JLabel("<html><div style='text-align: center; color: red;'>" +
+                "Error: " + error + "</div>", JLabel.CENTER);
+
+        JButton retryButton = new JButton("Try Again");
+        retryButton.addActionListener(e -> {
+            try {
+                this.gameController = new GameController();
+                this.gameController.setOnGameListChanged(this::refreshGames);
+                initializeUI();
+                loadGamesAsync();
+            } catch (Exception ex) {
+                initializeErrorUI(ex.getMessage());
             }
         });
 
-        SwingWorker<List<Game>, Void> worker = new SwingWorker<List<Game>, Void>() {
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(retryButton);
+
+        rootPanel.add(errorLabel, BorderLayout.CENTER);
+        rootPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private void loadGamesAsync() {
+        SwingWorker<List<Game>, Void> worker = new SwingWorker<>() {
             @Override
-            protected List<Game> doInBackground() throws Exception {
-                return gamesFuture.get();
+            protected List<Game> doInBackground() {
+                try {
+                    return gameController.getAllGames();
+                } catch (Exception e) {
+                    return List.of();
+                }
             }
 
             @Override
@@ -47,8 +75,10 @@ public class LibraryPage {
                 try {
                     List<Game> games = get();
                     gameList.showGames(games);
+                    rootPanel.revalidate();
+                    rootPanel.repaint();
                 } catch (Exception e) {
-                    gameList.showError(e.getMessage());
+                    gameList.showError("Falha ao carregar jogos: " + e.getMessage());
                 }
             }
         };
@@ -56,10 +86,11 @@ public class LibraryPage {
         worker.execute();
     }
 
-    private Game createGame(int id, String title, int year) {
-        Game game = new Game(title, null, null, year, null, null);
-        game.setId(id);
-        return game;
+    public void refreshGames() {
+        if (gameList != null) {
+            gameList.showLoading();
+            loadGamesAsync();
+        }
     }
 
     public JPanel getRootPanel() {
