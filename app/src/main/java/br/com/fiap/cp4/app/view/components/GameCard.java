@@ -51,12 +51,10 @@ public class GameCard extends JPanel {
         setMaximumSize(CARD_SIZE);
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Título
         JLabel titleLabel = new JLabel(game.getTitle());
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setForeground(TEXT_COLOR);
 
-        // Informações do jogo
         String statusText = "Status: " + (game.getStatus() != null ? game.getStatus().getDisplayName() : "N/A");
         JLabel statusLabel = new JLabel(statusText);
         statusLabel.setForeground(getStatusColor(game.getStatus()));
@@ -69,7 +67,6 @@ public class GameCard extends JPanel {
         JLabel genreLabel = new JLabel(genreText);
         genreLabel.setForeground(TEXT_COLOR);
 
-        // Panel com as informações
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setBackground(CARD_COLOR);
@@ -80,11 +77,9 @@ public class GameCard extends JPanel {
         infoPanel.add(platformLabel);
         infoPanel.add(genreLabel);
 
-        // Panel dos botões
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         buttonPanel.setBackground(CARD_COLOR);
 
-        // Botão de favorito
         JButton favoriteButton = new JButton(game.isFavorite() ? "♥" : "♡");
         favoriteButton.setFont(new Font("Dialog", Font.BOLD, 16));
         favoriteButton.setForeground(game.isFavorite() ? FAVORITE_COLOR : FAVORITE_INACTIVE_COLOR);
@@ -100,7 +95,6 @@ public class GameCard extends JPanel {
             }
         });
 
-        // Botão de deletar
         JButton deleteButton = new JButton("×");
         deleteButton.setFont(new Font("Arial", Font.BOLD, 16));
         deleteButton.setForeground(DELETE_COLOR);
@@ -123,11 +117,9 @@ public class GameCard extends JPanel {
         buttonPanel.add(favoriteButton);
         buttonPanel.add(deleteButton);
 
-        // Layout principal
         add(infoPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.EAST);
 
-        // Mouse listeners para hover e clique
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 setBackground(CARD_HOVER_COLOR);
@@ -146,7 +138,6 @@ public class GameCard extends JPanel {
             }
 
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                // Só executa se não clicou nos botões
                 if (evt.getSource() == GameCard.this) {
                     if (controller != null) {
                         controller.editGame(SwingUtilities.getWindowAncestor(GameCard.this), game);
