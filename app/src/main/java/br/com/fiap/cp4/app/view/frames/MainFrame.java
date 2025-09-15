@@ -2,6 +2,7 @@ package br.com.fiap.cp4.app.view.frames;
 
 import br.com.fiap.cp4.app.view.pages.LibraryPage;
 import br.com.fiap.cp4.app.view.pages.FavoritesPage;
+import br.com.fiap.cp4.app.view.pages.FinishedPage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -15,6 +16,7 @@ public class MainFrame extends JFrame {
     private JButton selectedButton;
     private LibraryPage libraryPage;
     private FavoritesPage favoritesPage;
+    private FinishedPage finishedPage;
 
     private static final Color SIDEBAR_COLOR = new Color(45, 52, 64);
     private static final Color SELECTED_COLOR = new Color(88, 101, 242);
@@ -38,6 +40,7 @@ public class MainFrame extends JFrame {
 
         libraryPage = new LibraryPage();
         favoritesPage = new FavoritesPage();
+        finishedPage = new FinishedPage();
 
         contentPanel.add(libraryPage.getRootPanel(), BorderLayout.CENTER);
 
@@ -190,8 +193,11 @@ public class MainFrame extends JFrame {
     }
 
     private void showFinishedPage() {
-        JOptionPane.showMessageDialog(this, "Carregando jogos finalizados...",
-                "Jogos Finalizados", JOptionPane.INFORMATION_MESSAGE);
+        contentPanel.removeAll();
+        contentPanel.add(finishedPage.getRootPanel(), BorderLayout.CENTER);
+        finishedPage.refreshFinished();
+        contentPanel.revalidate();
+        contentPanel.repaint();
         setTitle("Games Management System - Finalizados");
     }
 

@@ -36,6 +36,15 @@ public class GameController {
         }
     }
 
+    public List<Game> getFinishedGames() {
+        try {
+            return gameDAO.findByStatus("COMPLETED");
+        } catch (Exception e) {
+            showErrorMessage("Erro ao carregar jogos finalizados: " + e.getMessage());
+            return List.of();
+        }
+    }
+
     public Game createNewGame(Component parent) {
         Game newGame = new Game("", null, null, Year.now().getValue(), null, null);
         Game result = GameFormDialog.showDialog(parent, this, newGame, false);
