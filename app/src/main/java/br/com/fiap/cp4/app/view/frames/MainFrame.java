@@ -1,28 +1,46 @@
 package br.com.fiap.cp4.app.view.frames;
 
 import br.com.fiap.cp4.app.view.pages.LibraryPage;
+import br.com.fiap.cp4.app.view.pages.FavoritesPage;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainFrame extends JFrame {
     private JPanel contentPanel;
+    private List<JButton> menuButtons;
+    private JButton selectedButton;
+    private LibraryPage libraryPage;
+    private FavoritesPage favoritesPage;
+
+    private static final Color SIDEBAR_COLOR = new Color(45, 52, 64);
+    private static final Color SELECTED_COLOR = new Color(88, 101, 242);
+    private static final Color HOVER_COLOR = new Color(76, 86, 106);
+    private static final Color TEXT_NORMAL = new Color(200, 200, 200);
+    private static final Color TEXT_SELECTED = Color.WHITE;
 
     public MainFrame() {
+        menuButtons = new ArrayList<>();
         createComponents();
         setupFrame();
         showLibraryPage();
     }
 
     private void createComponents() {
-        // Menu lateral
         JPanel sidebar = createSidebar();
 
-        // Painel de conteúdo principal
-        contentPanel = new JPanel(new CardLayout());
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
         contentPanel.setBackground(Color.WHITE);
-        contentPanel.add(new LibraryPage().getRootPanel(), "library");
 
-        // Layout principal
+        libraryPage = new LibraryPage();
+        favoritesPage = new FavoritesPage();
+
+        contentPanel.add(libraryPage.getRootPanel(), BorderLayout.CENTER);
+
         setLayout(new BorderLayout());
         add(sidebar, BorderLayout.WEST);
         add(contentPanel, BorderLayout.CENTER);
@@ -31,26 +49,27 @@ public class MainFrame extends JFrame {
     private JPanel createSidebar() {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(new Color(45, 52, 64));
+        sidebar.setBackground(SIDEBAR_COLOR);
         sidebar.setPreferredSize(new Dimension(200, 0));
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
 
-        // Título do aplicativo
         JLabel titleLabel = new JLabel("Game Manager");
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Botões do menu
-        JButton libraryButton = createMenuButton("Biblioteca", true);
-        JButton favoritesButton = createMenuButton("Favoritos", false);
-        JButton finishedButton = createMenuButton("Finalizados", false);
-        JButton categoriesButton = createMenuButton("Categorias", false);
+        JButton libraryButton = createMenuButton("Biblioteca", "library");
+        JButton favoritesButton = createMenuButton("Favoritos", "favorites");
+        JButton finishedButton = createMenuButton("Finalizados", "finished");
 
-        // Configurar listeners
-        setupMenuListeners(libraryButton, favoritesButton, finishedButton, categoriesButton);
+        menuButtons.add(libraryButton);
+        menuButtons.add(favoritesButton);
+        menuButtons.add(finishedButton);
 
-        // Adicionar componentes ao sidebar
+        setSelectedButton(libraryButton);
+
+        setupMenuListeners(libraryButton, favoritesButton, finishedButton);
+
         sidebar.add(titleLabel);
         sidebar.add(Box.createVerticalStrut(30));
         sidebar.add(libraryButton);
@@ -58,15 +77,14 @@ public class MainFrame extends JFrame {
         sidebar.add(favoritesButton);
         sidebar.add(Box.createVerticalStrut(10));
         sidebar.add(finishedButton);
-        sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(categoriesButton);
-        sidebar.add(Box.createVerticalGlue()); // Empurra tudo para cima
+        sidebar.add(Box.createVerticalGlue());
 
         return sidebar;
     }
 
-    private JButton createMenuButton(String text, boolean selected) {
+    private JButton createMenuButton(String text, String actionCommand) {
         JButton button = new JButton(text);
+        button.setActionCommand(actionCommand);
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
         button.setMaximumSize(new Dimension(170, 40));
         button.setPreferredSize(new Dimension(170, 40));
@@ -75,27 +93,20 @@ public class MainFrame extends JFrame {
         button.setBorderPainted(false);
         button.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        if (selected) {
-            button.setBackground(new Color(88, 101, 242));
-            button.setForeground(Color.WHITE);
-        } else {
-            button.setBackground(new Color(45, 52, 64));
-            button.setForeground(new Color(200, 200, 200));
-        }
+        setButtonUnselected(button);
 
-        // Efeitos de hover
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                if (!selected) {
-                    button.setBackground(new Color(76, 86, 106));
+                if (button != selectedButton) {
+                    button.setBackground(HOVER_COLOR);
                 }
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                if (!selected) {
-                    button.setBackground(new Color(45, 52, 64));
+                if (button != selectedButton) {
+                    setButtonUnselected(button);
                 }
             }
         });
@@ -103,41 +114,53 @@ public class MainFrame extends JFrame {
         return button;
     }
 
-    private void setupMenuListeners(JButton library, JButton favorites, JButton finished, JButton categories) {
-        library.addActionListener(e -> {
-            showLibraryPage();
-            updateSelectedButton(library, favorites, finished, categories);
-        });
+    private void setupMenuListeners(JButton library, JButton favorites, JButton finished) {
+        ActionListener menuListener = new MenuActionListener();
 
-        favorites.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Carregando jogos favoritos...",
-                    "Jogos Favoritos", JOptionPane.INFORMATION_MESSAGE);
-            updateSelectedButton(favorites, library, finished, categories);
-        });
-
-        finished.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Carregando jogos finalizados...",
-                    "Jogos Finalizados", JOptionPane.INFORMATION_MESSAGE);
-            updateSelectedButton(finished, library, favorites, categories);
-        });
-
-        categories.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Carregando categorias...",
-                    "Categorias", JOptionPane.INFORMATION_MESSAGE);
-            updateSelectedButton(categories, library, favorites, finished);
-        });
+        library.addActionListener(menuListener);
+        favorites.addActionListener(menuListener);
+        finished.addActionListener(menuListener);
     }
 
-    private void updateSelectedButton(JButton selected, JButton... others) {
-        // Destacar botão selecionado
-        selected.setBackground(new Color(88, 101, 242));
-        selected.setForeground(Color.WHITE);
+    private class MenuActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JButton clickedButton = (JButton) e.getSource();
+            String action = clickedButton.getActionCommand();
 
-        // Resetar outros botões
-        for (JButton button : others) {
-            button.setBackground(new Color(45, 52, 64));
-            button.setForeground(new Color(200, 200, 200));
+            setSelectedButton(clickedButton);
+
+            switch (action) {
+                case "library":
+                    showLibraryPage();
+                    break;
+                case "favorites":
+                    showFavoritesPage();
+                    break;
+                case "finished":
+                    showFinishedPage();
+                    break;
+            }
         }
+    }
+
+    private void setSelectedButton(JButton button) {
+        if (selectedButton != null) {
+            setButtonUnselected(selectedButton);
+        }
+
+        selectedButton = button;
+        setButtonSelected(button);
+    }
+
+    private void setButtonSelected(JButton button) {
+        button.setBackground(SELECTED_COLOR);
+        button.setForeground(TEXT_SELECTED);
+    }
+
+    private void setButtonUnselected(JButton button) {
+        button.setBackground(SIDEBAR_COLOR);
+        button.setForeground(TEXT_NORMAL);
     }
 
     private void setupFrame() {
@@ -149,8 +172,27 @@ public class MainFrame extends JFrame {
     }
 
     private void showLibraryPage() {
-        ((CardLayout) contentPanel.getLayout()).show(contentPanel, "library");
+        contentPanel.removeAll();
+        contentPanel.add(libraryPage.getRootPanel(), BorderLayout.CENTER);
+        libraryPage.refreshGames();
+        contentPanel.revalidate();
+        contentPanel.repaint();
         setTitle("Games Management System - Biblioteca");
+    }
+
+    private void showFavoritesPage() {
+        contentPanel.removeAll();
+        contentPanel.add(favoritesPage.getRootPanel(), BorderLayout.CENTER);
+        favoritesPage.refreshFavorites();
+        contentPanel.revalidate();
+        contentPanel.repaint();
+        setTitle("Games Management System - Favoritos");
+    }
+
+    private void showFinishedPage() {
+        JOptionPane.showMessageDialog(this, "Carregando jogos finalizados...",
+                "Jogos Finalizados", JOptionPane.INFORMATION_MESSAGE);
+        setTitle("Games Management System - Finalizados");
     }
 
     public void showWindow() {

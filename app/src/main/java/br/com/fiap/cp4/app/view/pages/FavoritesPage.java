@@ -8,16 +8,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-public class LibraryPage {
+public class FavoritesPage {
     private JPanel rootPanel;
     private GameList gameList;
     private GameController gameController;
 
-    public LibraryPage() {
+    public FavoritesPage() {
         try {
             this.gameController = new GameController();
             initializeUI();
-            loadGamesAsync();
+            loadFavoriteGamesAsync();
         } catch (Exception e) {
             initializeErrorUI(e.getMessage());
         }
@@ -40,9 +40,9 @@ public class LibraryPage {
         retryButton.addActionListener(e -> {
             try {
                 this.gameController = new GameController();
-                this.gameController.setOnGameListChanged(this::refreshGames);
+                this.gameController.setOnGameListChanged(this::refreshFavorites);
                 initializeUI();
-                loadGamesAsync();
+                loadFavoriteGamesAsync();
             } catch (Exception ex) {
                 initializeErrorUI(ex.getMessage());
             }
@@ -55,12 +55,12 @@ public class LibraryPage {
         rootPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void loadGamesAsync() {
+    private void loadFavoriteGamesAsync() {
         SwingWorker<List<Game>, Void> worker = new SwingWorker<>() {
             @Override
             protected List<Game> doInBackground() {
                 try {
-                    return gameController.getAllGames();
+                    return gameController.getFavoriteGames();
                 } catch (Exception e) {
                     return List.of();
                 }
@@ -69,12 +69,12 @@ public class LibraryPage {
             @Override
             protected void done() {
                 try {
-                    List<Game> games = get();
-                    gameList.showGames(games);
+                    List<Game> favoriteGames = get();
+                    gameList.showGames(favoriteGames);
                     rootPanel.revalidate();
                     rootPanel.repaint();
                 } catch (Exception e) {
-                    gameList.showError("Falha ao carregar jogos: " + e.getMessage());
+                    gameList.showError("Falha ao carregar jogos favoritos: " + e.getMessage());
                 }
             }
         };
@@ -82,10 +82,10 @@ public class LibraryPage {
         worker.execute();
     }
 
-    public void refreshGames() {
+    public void refreshFavorites() {
         if (gameList != null) {
             gameList.showLoading();
-            loadGamesAsync();
+            loadFavoriteGamesAsync();
         }
     }
 
