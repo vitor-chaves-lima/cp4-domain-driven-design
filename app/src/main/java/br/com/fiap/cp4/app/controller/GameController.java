@@ -62,7 +62,6 @@ public class GameController {
         if (result != null) {
             try {
                 gameDAO.update(result);
-                showSuccessMessage("Jogo atualizado com sucesso!");
                 refreshGameList();
             } catch (Exception e) {
                 showErrorMessage("Erro ao atualizar jogo: " + e.getMessage());
@@ -88,6 +87,24 @@ public class GameController {
         }
     }
 
+    public void toggleFavorite(Game game) {
+        if (game == null) {
+            showErrorMessage("Nenhum jogo selecionado");
+            return;
+        }
+
+        try {
+            boolean success = gameDAO.toggleFavorite(game.getId());
+            if (success) {
+                refreshGameList();
+            } else {
+                showErrorMessage("Falha ao alterar favorito");
+            }
+        } catch (Exception e) {
+            showErrorMessage("Erro ao alterar favorito: " + e.getMessage());
+        }
+    }
+
     public void refreshGameList() {
         SwingUtilities.invokeLater(() -> {
             if (onGameListChanged != null) {
@@ -98,10 +115,6 @@ public class GameController {
 
     public void setOnGameListChanged(Runnable callback) {
         this.onGameListChanged = callback;
-    }
-
-    private void showSuccessMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showErrorMessage(String message) {

@@ -21,6 +21,8 @@ public class GameCard extends JPanel {
     private static final Color CARD_HOVER_COLOR = new Color(88, 101, 242);
     private static final Color TEXT_COLOR = new Color(236, 239, 244);
     private static final Color DELETE_COLOR = new Color(255, 107, 107);
+    private static final Color FAVORITE_COLOR = new Color(255, 215, 0);
+    private static final Color FAVORITE_INACTIVE_COLOR = new Color(150, 150, 150);
     private static final Dimension CARD_SIZE = new Dimension(300, 120);
 
     private static Game createDefaultGame() {
@@ -78,10 +80,27 @@ public class GameCard extends JPanel {
         infoPanel.add(platformLabel);
         infoPanel.add(genreLabel);
 
-        // Botão de deletar
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        // Panel dos botões
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         buttonPanel.setBackground(CARD_COLOR);
 
+        // Botão de favorito
+        JButton favoriteButton = new JButton(game.isFavorite() ? "♥" : "♡");
+        favoriteButton.setFont(new Font("Dialog", Font.BOLD, 16));
+        favoriteButton.setForeground(game.isFavorite() ? FAVORITE_COLOR : FAVORITE_INACTIVE_COLOR);
+        favoriteButton.setBackground(CARD_COLOR);
+        favoriteButton.setFocusPainted(false);
+        favoriteButton.setBorderPainted(false);
+        favoriteButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        favoriteButton.setToolTipText(game.isFavorite() ? "Remover dos favoritos" : "Adicionar aos favoritos");
+
+        favoriteButton.addActionListener(e -> {
+            if (controller != null) {
+                controller.toggleFavorite(game);
+            }
+        });
+
+        // Botão de deletar
         JButton deleteButton = new JButton("×");
         deleteButton.setFont(new Font("Arial", Font.BOLD, 16));
         deleteButton.setForeground(DELETE_COLOR);
@@ -101,6 +120,7 @@ public class GameCard extends JPanel {
             }
         });
 
+        buttonPanel.add(favoriteButton);
         buttonPanel.add(deleteButton);
 
         // Layout principal
@@ -113,6 +133,7 @@ public class GameCard extends JPanel {
                 setBackground(CARD_HOVER_COLOR);
                 infoPanel.setBackground(CARD_HOVER_COLOR);
                 buttonPanel.setBackground(CARD_HOVER_COLOR);
+                favoriteButton.setBackground(CARD_HOVER_COLOR);
                 deleteButton.setBackground(CARD_HOVER_COLOR);
             }
 
@@ -120,12 +141,16 @@ public class GameCard extends JPanel {
                 setBackground(CARD_COLOR);
                 infoPanel.setBackground(CARD_COLOR);
                 buttonPanel.setBackground(CARD_COLOR);
+                favoriteButton.setBackground(CARD_COLOR);
                 deleteButton.setBackground(CARD_COLOR);
             }
 
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (controller != null) {
-                    controller.editGame(SwingUtilities.getWindowAncestor(GameCard.this), game);
+                // Só executa se não clicou nos botões
+                if (evt.getSource() == GameCard.this) {
+                    if (controller != null) {
+                        controller.editGame(SwingUtilities.getWindowAncestor(GameCard.this), game);
+                    }
                 }
             }
         });
@@ -158,6 +183,16 @@ public class GameCard extends JPanel {
             }
         });
         popupMenu.add(editItem);
+
+        JMenuItem favoriteItem = new JMenuItem(game.isFavorite() ? "Remover dos Favoritos" : "Adicionar aos Favoritos");
+        favoriteItem.addActionListener(e -> {
+            if (controller != null) {
+                controller.toggleFavorite(game);
+            }
+        });
+        popupMenu.add(favoriteItem);
+
+        popupMenu.addSeparator();
 
         JMenuItem deleteItem = new JMenuItem("Excluir Jogo");
         deleteItem.setForeground(DELETE_COLOR);

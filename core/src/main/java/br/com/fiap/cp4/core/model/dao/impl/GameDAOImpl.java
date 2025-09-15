@@ -16,7 +16,7 @@ import java.util.Optional;
 public class GameDAOImpl implements GameDAO {
 
     private static final String INSERT_SQL =
-            "INSERT INTO games (title, genre, platform, release_year, status, image_data) VALUES (?, ?, ?, ?, ?, ?)";
+            "INSERT INTO games (title, genre, platform, release_year, status, image_data, is_favorite) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     private static final String SELECT_BY_ID_SQL =
             "SELECT * FROM games WHERE id = ?";
@@ -25,7 +25,7 @@ public class GameDAOImpl implements GameDAO {
             "SELECT * FROM games ORDER BY title";
 
     private static final String UPDATE_SQL =
-            "UPDATE games SET title = ?, genre = ?, platform = ?, release_year = ?, status = ?, image_data = ? WHERE id = ?";
+            "UPDATE games SET title = ?, genre = ?, platform = ?, release_year = ?, status = ?, image_data = ?, is_favorite = ? WHERE id = ?";
 
     private static final String DELETE_SQL =
             "DELETE FROM games WHERE id = ?";
@@ -44,6 +44,12 @@ public class GameDAOImpl implements GameDAO {
 
     private static final String SELECT_BY_TITLE_CONTAINING_SQL =
             "SELECT * FROM games WHERE title ILIKE ? ORDER BY title";
+
+    private static final String SELECT_FAVORITES_SQL =
+            "SELECT * FROM games WHERE is_favorite = true ORDER BY title";
+
+    private static final String TOGGLE_FAVORITE_SQL =
+            "UPDATE games SET is_favorite = NOT is_favorite WHERE id = ?";
 
     private static final String COUNT_BY_STATUS_SQL =
             "SELECT COUNT(*) FROM games WHERE status = ?";
@@ -123,7 +129,7 @@ public class GameDAOImpl implements GameDAO {
              PreparedStatement ps = conn.prepareStatement(UPDATE_SQL)) {
 
             setGameParameters(ps, game);
-            ps.setInt(7, game.getId());
+            ps.setInt(8, game.getId());
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected == 0) {
@@ -212,6 +218,40 @@ public class GameDAOImpl implements GameDAO {
     }
 
     @Override
+    public List<Game> findFavorites() {
+        List<Game> games = new ArrayList<>();
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_FAVORITES_SQL);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                games.add(mapResultSetToGame(rs));
+            }
+
+        } catch (SQLException e) {
+            throw new DAOException("Error finding favorite games: " + e.getMessage(), e);
+        }
+
+        return games;
+    }
+
+    @Override
+    public boolean toggleFavorite(Integer gameId) {
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(TOGGLE_FAVORITE_SQL)) {
+
+            ps.setInt(1, gameId);
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            throw new DAOException("Error toggling favorite status: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public int countByStatus(String status) {
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(COUNT_BY_STATUS_SQL)) {
@@ -281,6 +321,8 @@ public class GameDAOImpl implements GameDAO {
         } else {
             ps.setNull(6, Types.BINARY);
         }
+
+        ps.setBoolean(7, game.isFavorite());
     }
 
     private Game mapResultSetToGame(ResultSet rs) throws SQLException {
@@ -295,8 +337,11 @@ public class GameDAOImpl implements GameDAO {
             imageData = null;
         }
 
+        boolean isFavorite = rs.getBoolean("is_favorite");
+
         Game game = new Game(title, genre, platform, releaseYear, status, imageData);
         game.setId(rs.getInt("id"));
+        game.setFavorite(isFavorite);
 
         return game;
     }

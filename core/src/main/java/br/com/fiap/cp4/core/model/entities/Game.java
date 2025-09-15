@@ -17,6 +17,7 @@ public class Game {
     private int releaseYear;
     private GameStatus status;
     private byte[] imageData;
+    private boolean isFavorite;
 
     public Game(String title, GameGenre genre, GamePlatform platform,
                 int releaseYear, GameStatus status, byte[] imageData) {
@@ -26,6 +27,7 @@ public class Game {
         this.releaseYear = releaseYear;
         this.status = status;
         this.imageData = imageData;
+        this.isFavorite = false;
     }
 
     public Integer getId() {
@@ -84,6 +86,14 @@ public class Game {
         this.imageData = imageData;
     }
 
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.isFavorite = favorite;
+    }
+
     @Override
     public String toString() {
         return "Game{" +
@@ -94,6 +104,7 @@ public class Game {
                 ", releaseYear=" + releaseYear +
                 ", status='" + (status != null ? status.getDisplayName() : "null") + '\'' +
                 ", imageData=" + (imageData != null ? imageData.length + " bytes" : "null") +
+                ", isFavorite=" + isFavorite +
                 '}';
     }
 

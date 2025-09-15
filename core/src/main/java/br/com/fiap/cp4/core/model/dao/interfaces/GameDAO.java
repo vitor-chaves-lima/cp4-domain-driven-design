@@ -17,6 +17,9 @@ public interface GameDAO {
     List<Game> findByReleaseYear(int releaseYear);
     List<Game> findByTitleContaining(String title);
 
+    List<Game> findFavorites();
+    boolean toggleFavorite(Integer gameId);
+
     int countByStatus(String status);
     int countTotal();
 }

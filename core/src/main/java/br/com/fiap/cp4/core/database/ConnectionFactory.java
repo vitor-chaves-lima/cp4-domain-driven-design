@@ -17,10 +17,12 @@ public class ConnectionFactory {
     private static String url;
     private static String user;
     private static String password;
+    private static boolean schemaInitialized = false;
 
     static {
         loadDatabaseConfig();
         initializeDataSource();
+        ensureSchemaExists();
     }
 
     private static void loadDatabaseConfig() {
@@ -60,6 +62,23 @@ public class ConnectionFactory {
         dataSource = new HikariDataSource(config);
     }
 
+    private static void ensureSchemaExists() {
+        if (!schemaInitialized) {
+            try {
+                if (!tableExists("games")) {
+                    System.out.println("Table 'games' not found. Initializing schema...");
+                    executeSchemaInitialization();
+                } else if (!columnExists("games", "is_favorite")) {
+                    System.out.println("Column 'is_favorite' not found. Running migration...");
+                    addFavoriteColumn();
+                }
+                schemaInitialized = true;
+            } catch (Exception e) {
+                System.err.println("Error ensuring schema exists: " + e.getMessage());
+            }
+        }
+    }
+
     public static boolean tableExists(String tableName) {
         try (Connection conn = getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
@@ -68,7 +87,7 @@ public class ConnectionFactory {
                 boolean exists = tables.next();
 
                 if (exists) {
-                    System.out.println("Table '" + tableName + "' already exists. Skipping creation.");
+                    System.out.println("Table '" + tableName + "' already exists.");
                 }
 
                 return exists;
@@ -77,6 +96,46 @@ public class ConnectionFactory {
         } catch (SQLException e) {
             System.err.println("Error checking table existence: " + e.getMessage());
             return false;
+        }
+    }
+
+    public static boolean columnExists(String tableName, String columnName) {
+        try (Connection conn = getConnection()) {
+            DatabaseMetaData metaData = conn.getMetaData();
+
+            try (ResultSet columns = metaData.getColumns(null, null, tableName, columnName)) {
+                boolean exists = columns.next();
+
+                if (exists) {
+                    System.out.println("Column '" + columnName + "' exists in table '" + tableName + "'.");
+                } else {
+                    System.out.println("Column '" + columnName + "' not found in table '" + tableName + "'.");
+                }
+
+                return exists;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error checking column existence: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static void addFavoriteColumn() {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+
+            String sql = "ALTER TABLE games ADD COLUMN is_favorite BOOLEAN DEFAULT FALSE";
+            stmt.executeUpdate(sql);
+
+            String indexSql = "CREATE INDEX IF NOT EXISTS idx_games_is_favorite ON games(is_favorite)";
+            stmt.executeUpdate(indexSql);
+
+            System.out.println("Added 'is_favorite' column and index successfully.");
+
+        } catch (SQLException e) {
+            System.err.println("Error adding favorite column: " + e.getMessage());
+            throw new RuntimeException("Failed to add favorite column", e);
         }
     }
 
