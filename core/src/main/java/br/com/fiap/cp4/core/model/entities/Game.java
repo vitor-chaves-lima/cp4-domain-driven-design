@@ -7,18 +7,49 @@ import br.com.fiap.cp4.core.model.enums.GamePlatform;
 import java.util.Objects;
 
 /**
- * Entity that represents a game in the system
+ * Represents a video game entity in the system.
+ * This class encapsulates all the properties and behaviors of a video game,
+ * including its metadata, status, and platform information.
+ * 
+ * @author Game Management System
+ * @version 1.0
+ * @since 2024
  */
 public class Game {
+    /** Unique identifier for the game */
     private Integer id;
+    
+    /** Title of the game */
     private String title;
+    
+    /** Genre of the game (e.g., ACTION, RPG, STRATEGY) */
     private GameGenre genre;
+    
+    /** Platform the game is available on (e.g., PC, PLAYSTATION, XBOX) */
     private GamePlatform platform;
+    
+    /** Year the game was released */
     private int releaseYear;
+    
+    /** Current status of the game (e.g., NOT_STARTED, IN_PROGRESS, COMPLETED) */
     private GameStatus status;
+    
+    /** Binary data of the game's cover image */
     private byte[] imageData;
+    
+    /** Flag indicating if the game is marked as favorite */
     private boolean isFavorite;
 
+    /**
+     * Constructs a new Game with the specified details.
+     *
+     * @param title The title of the game
+     * @param genre The genre of the game
+     * @param platform The platform the game is available on
+     * @param releaseYear The year the game was released
+     * @param status The current status of the game
+     * @param imageData Binary data of the game's cover image
+     */
     public Game(String title, GameGenre genre, GamePlatform platform,
                 int releaseYear, GameStatus status, byte[] imageData) {
         this.title = title;
@@ -30,10 +61,21 @@ public class Game {
         this.isFavorite = false;
     }
 
+    /**
+     * Returns the unique identifier of the game.
+     *
+     * @return the game's unique identifier, or null if not yet persisted
+     */
     public Integer getId() {
         return id;
     }
 
+    /**
+     * Sets the unique identifier of the game.
+     * This is typically set by the persistence layer when the game is saved.
+     *
+     * @param id the unique identifier to set
+     */
     public void setId(Integer id) {
         this.id = id;
     }
